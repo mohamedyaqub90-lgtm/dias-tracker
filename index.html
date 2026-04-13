@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ff5c35">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>DIAS Behaviour Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d12;--sf:#13161e;--sf2:#1b1f2a;--bd:#262c3a;--tx:#e2e5ee;--dim:#6e7590;--acc:#ff5c35;--acc2:#ff8a6a;--grn:#2dd4a8;--yel:#f0b429;--red:#ef4444;--pur:#8b7cf6;--teal:#22c9b0;--wa:#25D366}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--tx);min-height:100dvh}
+/* Header */
+.hdr{padding:14px;border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:50;background:rgba(11,13,18,.92);backdrop-filter:blur(10px)}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.hdr-i{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--acc),var(--acc2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:13px;flex-shrink:0}
+.hdr h1{font-size:1rem;font-weight:800;letter-spacing:-.3px}
+.hdr small{color:var(--dim);font-size:.63rem;font-weight:500;display:block}
+.W{max-width:700px;margin:0 auto;padding:10px 10px 100px}
+/* Tabs */
+.tabs{display:flex;gap:2px;margin-bottom:12px;background:var(--sf);border-radius:10px;padding:3px;border:1px solid var(--bd);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.T{flex:0 0 auto;padding:7px 10px;border:none;background:0;color:var(--dim);font-size:.65rem;font-weight:600;border-radius:7px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.2s}
+.T.on{background:var(--acc);color:#fff;box-shadow:0 2px 8px rgba(255,92,53,.25)}
+/* Card */
+.C{background:var(--sf);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px}
+.C h2{font-size:.86rem;font-weight:700;margin-bottom:10px}
+.R{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px}
+@media(max-width:400px){.R{grid-template-columns:1fr}}
+.L{font-size:.6rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+select,input[type=date],input[type=time],input[type=text],textarea{width:100%;padding:8px 10px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;color:var(--tx);font-size:.84rem;font-family:inherit;outline:none;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236e7590'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:24px}
+select:focus,input:focus,textarea:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(255,92,53,.1)}
+textarea{resize:vertical;min-height:40px}
+.B{width:100%;padding:11px;border:none;border-radius:9px;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:5px}
+.B:active{transform:scale(.98)}
+.Bo{background:linear-gradient(135deg,var(--acc),#e04a2a)}
+.Bt{background:linear-gradient(135deg,var(--teal),#14a896)}
+.Sb{padding:6px 10px;font-size:.68rem;font-weight:600;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);border-radius:7px;cursor:pointer;font-family:inherit}
+.Sb.D{border-color:var(--red);color:var(--red)}
+/* Name input with datalist */
+input[type=text]::placeholder{color:var(--dim);opacity:.7}
+/* Attendance */
+.AG{display:flex;flex-direction:column;gap:4px;margin:8px 0}
+.AR{display:flex;align-items:center;padding:6px 10px;background:var(--sf2);border:1px solid var(--bd);border-radius:8px;transition:.15s}
+.AR.ia{border-color:var(--red);background:rgba(239,68,68,.04)}
+.AR.il{border-color:var(--yel);background:rgba(240,180,41,.04)}
+.AR .n{width:18px;font-size:.64rem;color:var(--dim);font-weight:600;flex-shrink:0}
+.AR .nm{flex:1;font-weight:600;font-size:.8rem}
+.AR .btns{display:flex;gap:2px}
+.ab{padding:3px 8px;border-radius:5px;border:1px solid var(--bd);background:0;color:var(--dim);font-size:.64rem;font-weight:600;cursor:pointer;font-family:inherit;transition:.12s}
+.ab.sp{background:rgba(45,212,168,.12);color:var(--grn);border-color:var(--grn)}
+.ab.sa{background:rgba(239,68,68,.12);color:var(--red);border-color:var(--red)}
+.ab.sl{background:rgba(240,180,41,.12);color:var(--yel);border-color:var(--yel)}
+.AS{display:flex;gap:10px;padding:8px 10px;background:var(--sf2);border-radius:8px;font-size:.8rem;font-weight:600;flex-wrap:wrap;margin:8px 0}
+/* Log entries */
+.LE{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:11px 12px;margin-bottom:7px;position:relative;animation:si .25s}
+@keyframes si{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.LE .x{position:absolute;top:7px;right:7px;border:none;background:0;color:var(--dim);cursor:pointer;font-size:.78rem;padding:3px}
+.LE .tp{display:flex;justify-content:space-between;align-items:flex-start;padding-right:20px;margin-bottom:2px}
+.LE .sn{font-weight:700;font-size:.85rem}
+.LE .cl{font-size:.6rem;font-weight:600;padding:1px 5px;border-radius:4px;background:rgba(139,124,246,.1);color:var(--pur)}
+.bg{display:inline-block;padding:1px 7px;border-radius:4px;font-size:.68rem;font-weight:600}
+.sv-low{background:rgba(45,212,168,.1);color:var(--grn)}
+.sv-medium{background:rgba(240,180,41,.1);color:var(--yel)}
+.sv-high{background:rgba(239,68,68,.1);color:var(--red)}
+.mt{display:flex;gap:8px;margin-top:4px;font-size:.68rem;color:var(--dim);flex-wrap:wrap}
+.nt{margin-top:4px;font-size:.74rem;color:var(--dim);font-style:italic;padding-left:7px;border-left:2px solid var(--bd)}
+.em{text-align:center;color:var(--dim);padding:30px 14px;font-size:.84rem}
+.lh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px}
+.lh h2{font-size:.88rem;font-weight:700}
+.lc{display:flex;gap:4px;flex-wrap:wrap}
+.fs{padding:5px 20px 5px 7px;font-size:.68rem;background:var(--sf2);border:1px solid var(--bd);border-radius:6px;color:var(--tx);font-family:inherit;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 12 12'%3E%3Cpath d='M6 8L1 3h10z' fill='%236e7590'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center}
+/* Att log */
+.AL{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:11px 12px;margin-bottom:7px;position:relative}
+.AL .x{position:absolute;top:7px;right:7px;border:none;background:0;color:var(--dim);cursor:pointer;font-size:.78rem;padding:3px}
+.atg{font-size:.6rem;font-weight:600;padding:1px 5px;border-radius:4px;background:rgba(34,201,176,.1);color:var(--teal);margin-left:5px}
+.ai{font-size:.78rem;margin-top:2px;font-weight:600}
+.ai.r{color:var(--red)}.ai.y{color:var(--yel)}.ai.g{color:var(--grn)}.ai.d{color:var(--dim)}
+/* Stats */
+.SG{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.SC{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:12px 4px;text-align:center}
+.SC .v{font-size:1.4rem;font-weight:800}
+.SC .l{font-size:.58rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.4px;margin-top:1px}
+.LB{background:var(--sf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:10px}
+.LB .tt{padding:9px 12px;font-weight:700;font-size:.8rem;border-bottom:1px solid var(--bd)}
+.LR{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid var(--bd)}
+.LR:last-child{border-bottom:none}
+.LR .rk{width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.64rem;font-weight:700;background:var(--sf2);color:var(--dim);margin-right:7px;flex-shrink:0}
+.LR .rk.tp{background:rgba(255,92,53,.12);color:var(--acc)}
+.LR .rk.tr{background:rgba(239,68,68,.12);color:var(--red)}
+.LR .ln{flex:1;font-weight:600;font-size:.8rem}
+.LR .lv{font-weight:700;font-size:.8rem;min-width:20px;text-align:right}
+.OB{display:flex;align-items:center;padding:7px 12px;border-bottom:1px solid var(--bd);gap:8px}
+.OB:last-child{border-bottom:none}
+.OB .ol{font-size:.74rem;font-weight:600;min-width:70px}
+.OB .ow{flex:1;height:4px;background:var(--sf2);border-radius:2px;overflow:hidden}
+.OB .ob{height:100%;background:var(--acc);border-radius:2px}
+.OB .oc{font-weight:700;font-size:.74rem;color:var(--acc);min-width:18px;text-align:right}
+/* Share */
+.shb{padding:12px;border-radius:9px;border:1px solid var(--bd);background:var(--sf2);color:var(--tx);font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;width:100%}
+.shb:active{transform:scale(.97)}
+.shb.wa{border-color:var(--wa);background:rgba(37,211,102,.06);color:var(--wa)}
+.shg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+/* Repeat offender alert */
+.alert-bar{padding:8px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:.76rem;font-weight:600;color:var(--red);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+/* Toast */
+.toast{position:fixed;bottom:14px;left:50%;transform:translateX(-50%) translateY(70px);background:var(--grn);color:#0b0d12;padding:9px 18px;border-radius:9px;font-weight:600;font-size:.82rem;z-index:1000;opacity:0;transition:.3s cubic-bezier(.22,1,.36,1);pointer-events:none;white-space:nowrap;font-family:inherit}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.P{display:none}.P.on{display:block}
+/* Print */
+.PR{display:none}
+@media print{
+body{background:#fff!important;color:#111!important}
+.hdr,.tabs,.W>.P,.toast{display:none!important}
+.PR{display:block!important;padding:16px;font-family:'Outfit',system-ui,sans-serif;font-size:11px}
+.PR h1{font-size:16px;margin-bottom:2px;font-weight:800}
+.PR h3{font-size:11px;color:#555;margin-bottom:10px;font-weight:500}
+.PR h2{font-size:13px;margin:12px 0 5px;border-bottom:2px solid #222;padding-bottom:2px;font-weight:700}
+.PR table{width:100%;border-collapse:collapse;font-size:10px;margin-bottom:8px}
+.PR th,.PR td{border:1px solid #bbb;padding:3px 6px;text-align:left}
+.PR th{background:#eee;font-weight:700}
+.PR .pr-red{color:#b00;font-weight:700}
+.PR .pr-yel{color:#a80;font-weight:700}
+.PR .pr-ft{margin-top:16px;font-size:9px;color:#888;border-top:1px solid #ccc;padding-top:4px}
+}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="hdr-r"><div class="hdr-i">D</div><div><h1>DIAS Behaviour Tracker</h1><small>Darusalaam Int'l Academic School</small></div></div></div>
+<div class="W">
+<div class="tabs" id="tabBar"></div>
+<div id="p-record" class="P on"></div>
+<div id="p-attend" class="P"></div>
+<div id="p-log" class="P"></div>
+<div id="p-attlog" class="P"></div>
+<div id="p-stats" class="P"></div>
+<div id="p-share" class="P"></div>
+</div>
+<div class="PR" id="printArea"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// === DATA ===
+const CLASSES=[
+  {id:"kg1",name:"KG 1",section:"primary"},
+  {id:"kg2",name:"KG 2",section:"primary"},
+  {id:"y1",name:"Year 1",section:"primary"},
+  {id:"y2",name:"Year 2",section:"primary"},
+  {id:"y3",name:"Year 3",section:"primary"},
+  {id:"y4",name:"Year 4",section:"primary"},
+  {id:"y5",name:"Year 5",section:"primary"},
+  {id:"y6",name:"Year 6",section:"primary"},
+  {id:"level1",name:"Level 1",section:"primary"},
+  {id:"level2",name:"Level 2",section:"primary"},
+  {id:"y7",name:"Year 7",section:"high"},
+  {id:"y8",name:"Year 8",section:"high"},
+  {id:"y9",name:"Year 9",section:"high"},
+  {id:"y10",name:"Year 10",section:"high"}
+];
+
+const PRELOADED={
+  level1:["Mohamedamin Liban","Mumtaz Liban","Sumaya Abdulkadir","Iftin Abdirahman","Ayaan Ali","Sudeys Abdulkadir","Mustaqim Ahmed","Filsan Said","Ahlam Ismail","Nihal Mustaf","Mahir Abdullahi","Marwan Abdullahi","Tamir Abdinasir","Waliid Mohamed","Musab Ahmed","Ali Abdirahman","Isra Ismail","Raashid Hassan","Safa Ali","Barwaqo Osman","Nasrin Abdikarim","Yasmin Mohamed","Omar Bashir","Anhar Ismail","Suheyba Abukar","Abdibasid Abdullahi"],
+  level2:["Mustaf Muhyidin Farah","Fatima Yasir Mohamed","Mohamed Abdullahi Mohamed","Abdirisaq Ahmed Mohamed","Manal Abdullah Mohamed","Ramla Abdirahman Ali","Salma Ibrahim Hassan","Samra Salah","Abdirahman Mohamed Ahmed","Hanan Osman Yusuf","Abdijaliil Said Omar","Najma Abdullahi Omar","Safa Ahmed Jeenow","Ahlam Osman Yusuf","Sara Mohamed Sheikh","Mohamed Abdullahi M. Dhaqane","Abdullahi Faysal Mohamoud","Abdinasir Said Omar","Maysun Ahmed Muhidin","Mustaf Ibrahim Hassan","Dahraan Crise Mohamed","Nuseyba Abdirahman Ahmed"]
+};
+
+const CL={}; CLASSES.forEach(c=>{CL[c.id]=c.name;});
+
+const LOCATIONS=[
+  {group:"In Class",items:["Maths","Science","English","Arabic","Quran","PE","Other Subject"]},
+  {group:"Break Duty",items:["Field","Canteen","Ground Floor","First Floor","Toilet Area","Escort to Bus"]}
+];
+
+const OFFENCES=[
+  {g:"Minor",items:["Talking","Laughing in class","Turning around","Not writing","Homework not done","Playing with objects","Sleeping / Head down","Eating in class","Late to class","Out of uniform","Littering"]},
+  {g:"Moderate",items:["Standing without permission","Arguing with teacher","Arguing with student","Shouting","Throwing objects","Leaving seat repeatedly","Disrespectful language","Refusing to work","Copying / Cheating","Using phone","Running in corridor","Name-calling"]},
+  {g:"Serious",items:["Fighting","Hitting another student","Bullying","Destroying property","Leaving class without permission","Leaving school grounds","Threatening behaviour","Stealing"]}
+];
+
+const SEV={};
+OFFENCES[0].items.forEach(o=>SEV[o]="low");
+OFFENCES[1].items.forEach(o=>SEV[o]="medium");
+OFFENCES[2].items.forEach(o=>SEV[o]="high");
+
+const TABS=[
+  {id:"record",icon:"✏️",label:"Record"},
+  {id:"attend",icon:"📋",label:"Attend."},
+  {id:"log",icon:"📄",label:"Log"},
+  {id:"attlog",icon:"📅",label:"Att.Log"},
+  {id:"stats",icon:"📊",label:"Stats"},
+  {id:"share",icon:"📤",label:"Share"}
+];
+
+const td=()=>new Date().toISOString().split("T")[0];
+const nt=()=>new Date().toTimeString().slice(0,5);
+const fD=d=>{if(!d)return"";const p=d.split("-");return p[2]+"/"+p[1]+"/"+p[0];};
+const fDL=d=>{try{return new Date(d+"T12:00:00").toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});}catch{return fD(d);}};
+const esc=s=>{const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;};
+
+// === STATE ===
+let inc=JSON.parse(localStorage.getItem("dias_inc")||"[]");
+let att=JSON.parse(localStorage.getItem("dias_att")||"[]");
+let aState={};
+let curTab="record";
+
+// Migrate old data
+(function(){
+  if(!inc.length){try{const o=localStorage.getItem("behaviourIncidents")||localStorage.getItem("bt_inc");if(o){const p=JSON.parse(o);if(p&&p.length){inc=p.map(x=>({...x,sev:x.sev||x.severity||SEV[x.offence]||"medium",location:x.subject||x.location||"Other Subject"}));sv("dias_inc",inc);}}}catch{}}
+  if(!att.length){try{const o=localStorage.getItem("behaviourAttendance")||localStorage.getItem("bt_att");if(o){const p=JSON.parse(o);if(p&&p.length){att=p;sv("dias_att",att);}}}catch{}}
+})();
+
+function sv(k,d){localStorage.setItem(k,JSON.stringify(d));}
+
+// === RENDER TABS ===
+function renderTabs(){
+  document.getElementById("tabBar").innerHTML=TABS.map(t=>`<button class="T${curTab===t.id?" on":""}" onclick="go('${t.id}')">${t.icon} ${t.label}</button>`).join("");
+}
+
+function go(tab){
+  curTab=tab;
+  document.querySelectorAll(".P").forEach(p=>p.classList.remove("on"));
+  document.getElementById("p-"+tab).classList.add("on");
+  renderTabs();
+  if(tab==="log") rLog();
+  if(tab==="attlog") rAL();
+  if(tab==="stats") rStats();
+  if(tab==="share") rShare();
+}
+
+// === RECORD PANEL ===
+function renderRecord(){
+  const hasP=cls=>!!PRELOADED[cls];
+  const el=document.getElementById("p-record");
+
+  // Check repeat offenders today
+  const today=td();
+  const todayInc=inc.filter(i=>i.date===today);
+  const countMap={};todayInc.forEach(i=>{countMap[i.student]=(countMap[i.student]||0)+1;});
+  const repeats=Object.entries(countMap).filter(([_,c])=>c>=3);
+  let alertHTML="";
+  if(repeats.length){
+    alertHTML=repeats.map(([n,c])=>`<div class="alert-bar">⚠️ <b>${esc(n)}</b> has ${c} incidents today — consider contacting parent</div>`).join("");
+  }
+
+  el.innerHTML=`
+    ${alertHTML}
+    <div class="C">
+      <h2>🚨 Record an Incident</h2>
+      <div class="R">
+        <div><div class="L">Section</div><select id="rSec" onchange="updRecClass()"><option value="primary">Primary</option><option value="high">High School</option></select></div>
+        <div><div class="L">Class</div><select id="rCls" onchange="updRecStudent()"></select></div>
+      </div>
+      <div class="R">
+        <div id="stuWrap"></div>
+        <div><div class="L">Location</div><select id="rLoc">${LOCATIONS.map(g=>`<optgroup label="${g.group}">${g.items.map(i=>`<option>${i}</option>`).join("")}</optgroup>`).join("")}</select></div>
+      </div>
+      <div style="margin-bottom:7px"><div class="L">Offence</div><select id="rOff">${OFFENCES.map(g=>`<optgroup label="${g.g}">${g.items.map(i=>`<option>${i}</option>`).join("")}</optgroup>`).join("")}</select></div>
+      <div class="R">
+        <div><div class="L">Date</div><input type="date" id="rD" value="${td()}"></div>
+        <div><div class="L">Time</div><input type="time" id="rT" value="${nt()}"></div>
+      </div>
+      <div style="margin-bottom:6px"><div class="L">Note (optional)</div><textarea id="rN" placeholder="Details..."></textarea></div>
+      <button class="B Bo" onclick="addInc()">Record Incident</button>
+    </div>`;
+  updRecClass();
+}
+
+function updRecClass(){
+  const sec=document.getElementById("rSec").value;
+  const sel=document.getElementById("rCls");
+  sel.innerHTML=CLASSES.filter(c=>c.section===sec).map(c=>`<option value="${c.id}">${c.name}</option>`).join("");
+  updRecStudent();
+}
+
+function updRecStudent(){
+  const cls=document.getElementById("rCls").value;
+  const wrap=document.getElementById("stuWrap");
+  if(PRELOADED[cls]){
+    wrap.innerHTML=`<div class="L">Student</div><select id="rStu">${PRELOADED[cls].map(s=>`<option>${s}</option>`).join("")}</select>`;
+  } else {
+    wrap.innerHTML=`<div class="L">Student Name</div><input type="text" id="rStu" placeholder="Type student name" autocomplete="off">`;
+  }
+}
+
+function addInc(){
+  const stuEl=document.getElementById("rStu");
+  const name=(stuEl.tagName==="SELECT"?stuEl.value:stuEl.value.trim());
+  if(!name){flash("Enter student name");return;}
+  const cls=document.getElementById("rCls").value;
+  const off=document.getElementById("rOff").value;
+  const item={id:Date.now(),class:cls,student:name,offence:off,sev:SEV[off]||"medium",location:document.getElementById("rLoc").value,date:document.getElementById("rD").value,time:document.getElementById("rT").value,note:document.getElementById("rN").value.trim()};
+  inc.unshift(item);sv("dias_inc",inc);
+  document.getElementById("rN").value="";
+  if(stuEl.tagName!=="SELECT") stuEl.value="";
+  // Check if repeat offender
+  const todayCount=inc.filter(i=>i.date===item.date&&i.student===item.student).length;
+  if(todayCount===3) flash("⚠️ "+name+" — 3rd incident today!");
+  else flash("✓ "+name+" — "+off);
+  renderRecord(); // refresh alerts
+}
+
+// === ATTENDANCE PANEL ===
+function renderAttend(){
+  const el=document.getElementById("p-attend");
+  el.innerHTML=`
+    <div class="C">
+      <h2>📋 Take Attendance</h2>
+      <div class="R">
+        <div><div class="L">Class</div><select id="aCls" onchange="buildAG()"><option value="level1">Level 1 (26)</option><option value="level2">Level 2 (22)</option></select></div>
+        <div><div class="L">Date</div><input type="date" id="aD" value="${td()}"></div>
+      </div>
+      <div id="aGrid"></div>
+      <div class="AS" id="aSum"></div>
+      <button class="B Bt" onclick="saveAtt()">Save Attendance</button>
+    </div>`;
+  buildAG();
+}
+
+function buildAG(){
+  const cls=document.getElementById("aCls").value;
+  if(!PRELOADED[cls]){document.getElementById("aGrid").innerHTML='<div class="em">Attendance only available for Level 1 & Level 2</div>';return;}
+  const list=PRELOADED[cls];
+  aState={};list.forEach(s=>{aState[s]="P";});
+  document.getElementById("aGrid").innerHTML='<div class="AG">'+list.map((s,i)=>`<div class="AR" id="ar${i}"><span class="n">${i+1}</span><span class="nm">${s}</span><div class="btns"><button class="ab sp" onclick="sA('${s.replace(/'/g,"\\'")}',${i},'P')">✓</button><button class="ab" onclick="sA('${s.replace(/'/g,"\\'")}',${i},'A')">✗</button><button class="ab" onclick="sA('${s.replace(/'/g,"\\'")}',${i},'L')">Late</button></div></div>`).join("")+"</div>";
+  updAS();
+}
+
+function sA(name,i,v){
+  aState[name]=v;
+  const row=document.getElementById("ar"+i);
+  row.className="AR"+(v==="A"?" ia":"")+(v==="L"?" il":"");
+  row.querySelectorAll(".ab").forEach(b=>{
+    const bv=b.textContent==="✓"?"P":b.textContent==="✗"?"A":"L";
+    b.className="ab"+(bv===v?(v==="P"?" sp":v==="A"?" sa":" sl"):"");
+  });
+  updAS();
+}
+
+function updAS(){
+  const v=Object.values(aState);
+  document.getElementById("aSum").innerHTML=`<span>🟢 Present: ${v.filter(x=>x==="P").length}</span><span>🔴 Absent: ${v.filter(x=>x==="A").length}</span><span>🟡 Late: ${v.filter(x=>x==="L").length}</span><span style="color:var(--dim)">Total: ${v.length}</span>`;
+}
+
+function saveAtt(){
+  const cls=document.getElementById("aCls").value;
+  const d=document.getElementById("aD").value;
+  const absent=Object.entries(aState).filter(([_,v])=>v==="A").map(([k])=>k);
+  const late=Object.entries(aState).filter(([_,v])=>v==="L").map(([k])=>k);
+  const present=Object.values(aState).filter(v=>v==="P").length;
+  att.unshift({id:Date.now(),class:cls,date:d,total:Object.keys(aState).length,present,absent,late});
+  sv("dias_att",att);
+  flash("✓ "+CL[cls]+": "+absent.length+" absent, "+late.length+" late");
+}
+
+// === LOG ===
+function rLog(){
+  const el=document.getElementById("p-log");
+  const allStu=[...new Set(inc.map(i=>i.student))].sort();
+  el.innerHTML=`
+    <div class="lh"><h2>📄 Incidents (${inc.length})</h2><div class="lc"><select class="fs" id="fCls" onchange="rLog()"><option value="all">All Classes</option>${CLASSES.map(c=>`<option value="${c.id}">${c.name}</option>`).join("")}</select><select class="fs" id="fStu" onchange="rLog()"><option value="all">All Students</option>${allStu.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join("")}</select><button class="Sb D" onclick="if(confirm('Delete ALL?')){inc=[];sv('dias_inc',inc);rLog();flash('Cleared');}">🗑</button></div></div>
+    <div id="logL"></div>`;
+  const fc=document.getElementById("fCls").value,fs=document.getElementById("fStu").value;
+  let f=inc;
+  if(fc!=="all") f=f.filter(i=>i.class===fc);
+  if(fs!=="all") f=f.filter(i=>i.student===fs);
+  const c=document.getElementById("logL");
+  if(!f.length){c.innerHTML='<div class="em">📭 No incidents</div>';return;}
+  c.innerHTML=f.map(i=>`<div class="LE"><button class="x" onclick="inc=inc.filter(x=>x.id!==${i.id});sv('dias_inc',inc);rLog();">✕</button><div class="tp"><span class="sn">${esc(i.student)}</span><span class="cl">${CL[i.class]||i.class}</span></div><span class="bg sv-${i.sev}">${esc(i.offence)}</span><div class="mt"><span>📅 ${fD(i.date)}</span><span>🕐 ${i.time}</span><span>📍 ${esc(i.location||i.subject||"")}</span></div>${i.note?`<div class="nt">"${esc(i.note)}"</div>`:""}</div>`).join("");
+}
+
+// === ATT LOG ===
+function rAL(){
+  const el=document.getElementById("p-attlog");
+  el.innerHTML=`
+    <div class="lh"><h2>📅 Attendance (${att.length})</h2><div class="lc"><select class="fs" id="aLC" onchange="rAL()"><option value="all">All</option><option value="level1">Lv1</option><option value="level2">Lv2</option></select><button class="Sb D" onclick="if(confirm('Delete ALL attendance?')){att=[];sv('dias_att',att);rAL();flash('Cleared');}">🗑</button></div></div>
+    <div id="attLL"></div>`;
+  const fc=document.getElementById("aLC").value;
+  let f=att;if(fc!=="all") f=f.filter(a=>a.class===fc);
+  const c=document.getElementById("attLL");
+  if(!f.length){c.innerHTML='<div class="em">📅 No records</div>';return;}
+  c.innerHTML=f.map(a=>`<div class="AL"><button class="x" onclick="att=att.filter(x=>x.id!==${a.id});sv('dias_att',att);rAL();">✕</button><div style="font-weight:700;font-size:.85rem;margin-bottom:3px">📅 ${fD(a.date)}<span class="atg">${CL[a.class]||a.class}</span></div><div class="ai d">✓ Present: ${a.present}/${a.total}</div>${a.absent.length?`<div class="ai r">✗ Absent (${a.absent.length}): ${a.absent.join(", ")}</div>`:`<div class="ai g">All present!</div>`}${a.late.length?`<div class="ai y">⏰ Late (${a.late.length}): ${a.late.join(", ")}</div>`:""}</div>`).join("");
+}
+
+// === STATS ===
+function rStats(){
+  const c=document.getElementById("p-stats");
+  if(!inc.length&&!att.length){c.innerHTML='<div class="em">📊 No data yet</div>';return;}
+  const tot=inc.length,uni=new Set(inc.map(i=>i.student)).size;
+  const hi=inc.filter(i=>i.sev==="high").length,hw=inc.filter(i=>i.offence==="Homework not done").length;
+  const tAbs=att.reduce((s,a)=>s+a.absent.length,0);
+  // By class
+  const clsCnt={};inc.forEach(i=>{clsCnt[i.class]=(clsCnt[i.class]||0)+1;});
+  const topCls=Object.entries(clsCnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  // Top offenders
+  const stuCnt={};inc.forEach(i=>{stuCnt[i.student]=(stuCnt[i.student]||0)+1;});
+  const topStu=Object.entries(stuCnt).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  // Absent
+  const absM={};att.forEach(a=>a.absent.forEach(n=>{absM[n]=(absM[n]||0)+1;}));
+  const topAbs=Object.entries(absM).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  // Offences
+  const offCnt={};inc.forEach(i=>{offCnt[i.offence]=(offCnt[i.offence]||0)+1;});
+  const topOff=Object.entries(offCnt).sort((a,b)=>b[1]-a[1]);
+  const mx=topOff[0]?.[1]||1;
+  // Location
+  const locCnt={};inc.forEach(i=>{const l=i.location||i.subject||"?";locCnt[l]=(locCnt[l]||0)+1;});
+  const topLoc=Object.entries(locCnt).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  c.innerHTML=`
+    <div class="SG">
+      ${[[tot,"Incidents","var(--acc)"],[uni,"Students","var(--acc)"],[hi,"Serious","var(--red)"],[hw,"No H/W","var(--yel)"],[att.length,"Att. Days","var(--teal)"],[tAbs,"Absences","var(--red)"]].map(([v,l,cl])=>`<div class="SC"><div class="v" style="color:${cl}">${v}</div><div class="l">${l}</div></div>`).join("")}
+    </div>
+    ${topStu.length?`<div class="LB"><div class="tt">⚠️ Top Offenders</div>${topStu.map(([n,c],i)=>`<div class="LR"><span class="rk${i<3?" tp":""}">${i+1}</span><span class="ln">${esc(n)}</span><span class="lv" style="color:var(--acc)">${c}</span></div>`).join("")}</div>`:""}
+    ${topAbs.length?`<div class="LB"><div class="tt">📅 Most Absent</div>${topAbs.map(([n,c],i)=>`<div class="LR"><span class="rk${i<3?" tr":""}">${i+1}</span><span class="ln">${esc(n)}</span><span class="lv" style="color:var(--red)">${c}d</span></div>`).join("")}</div>`:""}
+    ${topCls.length?`<div class="LB"><div class="tt">🏫 By Class</div>${topCls.map(([id,c])=>`<div class="LR"><span class="ln">${CL[id]||id}</span><span class="lv" style="color:var(--pur)">${c}</span></div>`).join("")}</div>`:""}
+    ${topLoc.length?`<div class="LB"><div class="tt">📍 By Location</div>${topLoc.map(([l,c])=>`<div class="LR"><span class="ln">${esc(l)}</span><span class="lv" style="color:var(--teal)">${c}</span></div>`).join("")}</div>`:""}
+    ${topOff.length?`<div class="LB"><div class="tt">📊 Offence Breakdown</div>${topOff.map(([o,c])=>`<div class="OB"><span class="ol">${esc(o)}</span><div class="ow"><div class="ob" style="width:${(c/mx)*100}%"></div></div><span class="oc">${c}</span></div>`).join("")}</div>`:""}
+  `;
+}
+
+// === SHARE & PRINT ===
+function rShare(){
+  const el=document.getElementById("p-share");
+  const tAbs=att.reduce((s,a)=>s+a.absent.length,0);
+  el.innerHTML=`
+    <div class="C">
+      <h2>📤 Share & Print</h2>
+      <p style="color:var(--dim);font-size:.78rem;margin-bottom:12px">Generate a formatted daily report to share or print.</p>
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--teal)">📅 Today's Report</div>
+      <div class="shg"><button class="shb" onclick="shareE(false)">📧 Email</button><button class="shb wa" onclick="shareW(false)">💬 WhatsApp</button></div>
+      <button class="shb" onclick="doPrint(false)" style="margin-bottom:14px">🖨️ Print Today</button>
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--acc)">📋 Full Report</div>
+      <div class="shg"><button class="shb" onclick="shareE(true)">📧 Email All</button><button class="shb wa" onclick="shareW(true)">💬 WhatsApp All</button></div>
+      <button class="shb" onclick="doPrint(true)" style="margin-bottom:14px">🖨️ Print Full</button>
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--pur)">⬇ Export</div>
+      <button class="shb" onclick="expCSV()">⬇ Download CSV</button>
+    </div>
+    <div class="C">
+      <div style="font-size:.82rem;font-weight:700;margin-bottom:6px">📊 Summary</div>
+      <div style="font-size:.78rem;color:var(--dim);line-height:1.7">Incidents: <b style="color:var(--tx)">${inc.length}</b> · Students: <b style="color:var(--tx)">${new Set(inc.map(i=>i.student)).size}</b> · Serious: <b style="color:var(--red)">${inc.filter(i=>i.sev==="high").length}</b><br>Attendance days: <b style="color:var(--tx)">${att.length}</b> · Total absences: <b style="color:var(--red)">${tAbs}</b></div>
+      <div style="margin-top:8px;padding:7px 10px;background:rgba(45,212,168,.06);border:1px solid rgba(45,212,168,.15);border-radius:7px;font-size:.72rem;color:var(--grn)">✓ Data stored on device. Works offline.</div>
+    </div>`;
+}
+
+function buildText(full){
+  const d=td();
+  let t="";
+  if(full){
+    t="FULL BEHAVIOUR REPORT\nDarusalaam Int'l Academic School\nGenerated: "+fDL(d)+"\n\n";
+    t+="=== INCIDENTS ("+inc.length+") ===\n";
+    if(inc.length){
+      inc.forEach(i=>{t+=fD(i.date)+" "+i.time+" | "+i.student+" ("+CL[i.class]+") | "+i.offence+" | "+i.location+(i.note?" | "+i.note:"")+"\n";});
+    } else t+="None recorded\n";
+    t+="\n=== ATTENDANCE ("+att.length+" days) ===\n";
+    att.forEach(a=>{
+      t+=fD(a.date)+" — "+CL[a.class]+": "+a.present+"/"+a.total+" present";
+      if(a.absent.length) t+=" | Absent: "+a.absent.join(", ");
+      if(a.late.length) t+=" | Late: "+a.late.join(", ");
+      t+="\n";
+    });
+  } else {
+    t="DAILY BEHAVIOUR REPORT\nDarusalaam Int'l Academic School\n"+fDL(d)+"\n\n";
+    const tAtt=att.filter(a=>a.date===d);
+    const tInc=inc.filter(i=>i.date===d);
+    if(tAtt.length){
+      t+="📋 ATTENDANCE\n";
+      tAtt.forEach(a=>{
+        t+=CL[a.class]+": "+a.present+"/"+a.total+" present\n";
+        if(a.absent.length) t+="  Absent ("+a.absent.length+"): "+a.absent.join(", ")+"\n";
+        if(a.late.length) t+="  Late ("+a.late.length+"): "+a.late.join(", ")+"\n";
+      });
+    } else t+="📋 ATTENDANCE: Not recorded today\n";
+    t+="\n";
+    if(tInc.length){
+      t+="🚨 INCIDENTS ("+tInc.length+")\n";
+      tInc.forEach((i,n)=>{t+=(n+1)+". "+i.student+" ("+CL[i.class]+") — "+i.offence+" ["+i.location+", "+i.time+"]"+(i.sev==="high"?" ⚠️SERIOUS":"")+(i.note?" | "+i.note:"")+"\n";});
+      // Summary by severity
+      const lo=tInc.filter(i=>i.sev==="low").length,md=tInc.filter(i=>i.sev==="medium").length,hi=tInc.filter(i=>i.sev==="high").length;
+      t+="\nSummary: "+lo+" minor, "+md+" moderate, "+hi+" serious\n";
+    } else t+="🚨 INCIDENTS: None today ✓\n";
+  }
+  return t;
+}
+
+function shareE(full){
+  const subj=encodeURIComponent(full?"Full Behaviour Report — DIAS":"Daily Report — DIAS — "+fD(td()));
+  window.open("mailto:?subject="+subj+"&body="+encodeURIComponent(buildText(full)),"_blank");
+}
+
+function shareW(full){
+  window.open("https://wa.me/?text="+encodeURIComponent(buildText(full)),"_blank");
+}
+
+function buildPrintHTML(full){
+  const d=td();
+  let h="<h1>Darusalaam International Academic School</h1>";
+  if(full){
+    h+="<h3>Full Behaviour & Attendance Report — Generated "+fDL(d)+"</h3>";
+    h+="<h2>Incidents ("+inc.length+")</h2>";
+    if(inc.length){
+      h+="<table><tr><th>#</th><th>Date</th><th>Time</th><th>Student</th><th>Class</th><th>Offence</th><th>Severity</th><th>Location</th><th>Note</th></tr>";
+      inc.forEach((i,n)=>{h+="<tr><td>"+(n+1)+"</td><td>"+fD(i.date)+"</td><td>"+i.time+"</td><td>"+esc(i.student)+"</td><td>"+(CL[i.class]||i.class)+"</td><td>"+esc(i.offence)+"</td><td class=\""+(i.sev==="high"?"pr-red":i.sev==="medium"?"pr-yel":"")+"\">"+i.sev+"</td><td>"+esc(i.location||"")+"</td><td>"+esc(i.note||"")+"</td></tr>";});
+      h+="</table>";
+    } else h+="<p>None recorded</p>";
+    h+="<h2>Attendance ("+att.length+" days)</h2>";
+    if(att.length){
+      h+="<table><tr><th>Date</th><th>Class</th><th>Present</th><th>Absent</th><th>Late</th></tr>";
+      att.forEach(a=>{h+="<tr><td>"+fD(a.date)+"</td><td>"+(CL[a.class]||a.class)+"</td><td>"+a.present+"/"+a.total+"</td><td class=\""+(a.absent.length?"pr-red":"")+"\">"+(!a.absent.length?"—":a.absent.join(", "))+"</td><td class=\""+(a.late.length?"pr-yel":"")+"\">"+(!a.late.length?"—":a.late.join(", "))+"</td></tr>";});
+      h+="</table>";
+    }
+  } else {
+    h+="<h3>Daily Behaviour & Attendance Report — "+fDL(d)+"</h3>";
+    const tAtt=att.filter(a=>a.date===d);
+    const tInc=inc.filter(i=>i.date===d);
+    h+="<h2>Attendance</h2>";
+    if(tAtt.length){
+      h+="<table><tr><th>Class</th><th>Present</th><th>Absent</th><th>Late</th></tr>";
+      tAtt.forEach(a=>{h+="<tr><td>"+(CL[a.class]||a.class)+"</td><td>"+a.present+"/"+a.total+"</td><td class=\""+(a.absent.length?"pr-red":"")+"\">"+(!a.absent.length?"All present ✓":a.absent.join(", ")+" ("+a.absent.length+")")+"</td><td class=\""+(a.late.length?"pr-yel":"")+"\">"+(!a.late.length?"—":a.late.join(", "))+"</td></tr>";});
+      h+="</table>";
+    } else h+="<p>Not recorded today</p>";
+    h+="<h2>Incidents"+(tInc.length?" ("+tInc.length+")":"")+"</h2>";
+    if(tInc.length){
+      h+="<table><tr><th>#</th><th>Time</th><th>Student</th><th>Class</th><th>Offence</th><th>Severity</th><th>Location</th><th>Note</th></tr>";
+      tInc.forEach((i,n)=>{h+="<tr><td>"+(n+1)+"</td><td>"+i.time+"</td><td>"+esc(i.student)+"</td><td>"+(CL[i.class]||i.class)+"</td><td>"+esc(i.offence)+"</td><td class=\""+(i.sev==="high"?"pr-red":i.sev==="medium"?"pr-yel":"")+"\">"+i.sev+"</td><td>"+esc(i.location||"")+"</td><td>"+esc(i.note||"")+"</td></tr>";});
+      h+="</table>";
+      const lo=tInc.filter(i=>i.sev==="low").length,md=tInc.filter(i=>i.sev==="medium").length,hi=tInc.filter(i=>i.sev==="high").length;
+      h+="<p><b>Summary:</b> "+lo+" minor, "+md+" moderate"+(hi?", <span class='pr-red'>"+hi+" serious</span>":"")+"</p>";
+    } else h+="<p>No incidents today ✓</p>";
+  }
+  h+="<div class='pr-ft'>Generated by DIAS Behaviour Tracker · "+new Date().toLocaleString("en-GB")+"</div>";
+  return h;
+}
+
+function doPrint(full){
+  document.getElementById("printArea").innerHTML=buildPrintHTML(full);
+  setTimeout(()=>window.print(),200);
+}
+
+function expCSV(){
+  if(!inc.length){flash("No data");return;}
+  const h="Date,Time,Class,Student,Offence,Severity,Location,Note\n";
+  const r=inc.map(i=>`${i.date},${i.time},${CL[i.class]||i.class},"${(i.student||"").replace(/"/g,'""')}",${i.offence},${i.sev},"${(i.location||i.subject||"").replace(/"/g,'""')}","${(i.note||"").replace(/"/g,'""')}"`).join("\n");
+  const b=new Blob([h+r],{type:"text/csv"});const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;a.download="dias_behaviour_"+td()+".csv";a.click();URL.revokeObjectURL(u);
+  flash("CSV exported!");
+}
+
+// === TOAST ===
+function flash(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2500);}
+
+// === INIT ===
+renderTabs();renderRecord();renderAttend();
+
+// Register service worker for offline + installable PWA
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
