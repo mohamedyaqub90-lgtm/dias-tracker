@@ -434,8 +434,11 @@ function rShare(){
       <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--acc)">📋 Full Report</div>
       <div class="shg"><button class="shb" onclick="shareE(true)">📧 Email All</button><button class="shb wa" onclick="shareW(true)">💬 WhatsApp All</button></div>
       <button class="shb" onclick="doPrint(true)" style="margin-bottom:14px">🖨️ Print Full</button>
-      <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--pur)">⬇ Export</div>
+      <div style="font-weight:700;font-size:.82rem;margin-bottom:6px;color:var(--pur)">⬇ Export & Import</div>
       <button class="shb" onclick="expCSV()">⬇ Download CSV</button>
+      <div style="margin-top:8px"></div>
+      <label class="shb" style="cursor:pointer">📥 Import CSV (restore old data)<input type="file" accept=".csv" onchange="importCSV(this)" style="display:none"></label>
+      <div id="importStatus" style="margin-top:6px;font-size:.74rem;color:var(--dim)"></div>
     </div>
     <div class="C">
       <div style="font-size:.82rem;font-weight:700;margin-bottom:6px">📊 Summary</div>
@@ -545,6 +548,83 @@ function expCSV(){
   const b=new Blob([h+r],{type:"text/csv"});const u=URL.createObjectURL(b);
   const a=document.createElement("a");a.href=u;a.download="dias_behaviour_"+td()+".csv";a.click();URL.revokeObjectURL(u);
   flash("CSV exported!");
+}
+
+function importCSV(input){
+  const file=input.files[0];
+  if(!file){return;}
+  const status=document.getElementById("importStatus");
+  status.textContent="Reading file...";
+  status.style.color="var(--yel)";
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const lines=e.target.result.split("\n").filter(l=>l.trim());
+      if(lines.length<2){status.textContent="File is empty";status.style.color="var(--red)";return;}
+      // Parse header
+      const header=lines[0].toLowerCase();
+      const isOldFormat=header.includes("subject")&&!header.includes("location");
+      let imported=0,skipped=0;
+      // Reverse class lookup
+      const nameToId={};CLASSES.forEach(c=>{nameToId[c.name]=c.id;nameToId[c.name.toLowerCase()]=c.id;});
+      nameToId["level 1"]="level1";nameToId["level 2"]="level2";
+      nameToId["lv1"]="level1";nameToId["lv2"]="level2";
+
+      for(let i=1;i<lines.length;i++){
+        // Parse CSV line handling quoted fields
+        const row=[];let cur="",inQ=false;
+        for(let j=0;j<lines[i].length;j++){
+          const ch=lines[i][j];
+          if(ch==='"'){inQ=!inQ;}
+          else if(ch===','&&!inQ){row.push(cur.trim());cur="";}
+          else{cur+=ch;}
+        }
+        row.push(cur.trim());
+        if(row.length<5){skipped++;continue;}
+
+        // Map columns: Date,Time,Class,Student,Offence,Severity,Location/Subject,Note
+        const date=row[0]||"";
+        const time=row[1]||"";
+        const clsRaw=row[2]||"";
+        const student=row[3]||"";
+        const offence=row[4]||"";
+        const severity=row[5]||SEV[offence]||"medium";
+        const location=row[6]||(isOldFormat?row[6]:"Other Subject");
+        const note=row[7]||"";
+
+        if(!student||!offence){skipped++;continue;}
+
+        // Convert class name to id
+        let clsId=nameToId[clsRaw]||nameToId[clsRaw.toLowerCase()]||clsRaw;
+
+        // Check for duplicate (same student, date, time, offence)
+        const dup=inc.some(x=>x.student===student&&x.date===date&&x.time===time&&x.offence===offence);
+        if(dup){skipped++;continue;}
+
+        inc.push({
+          id:Date.now()+i,
+          class:clsId,
+          student:student,
+          offence:offence,
+          sev:severity,
+          location:location,
+          date:date,
+          time:time,
+          note:note
+        });
+        imported++;
+      }
+
+      sv("dias_inc",inc);
+      status.innerHTML=`<span style="color:var(--grn)">✓ Imported ${imported} records</span>`+(skipped?` <span style="color:var(--dim)">(${skipped} skipped/duplicates)</span>`:"");
+      flash("✓ Imported "+imported+" records");
+      rShare(); // refresh summary
+    }catch(err){
+      status.textContent="Error: "+err.message;
+      status.style.color="var(--red)";
+    }
+  };
+  reader.readAsText(file);
 }
 
 // === TOAST ===
