@@ -253,7 +253,7 @@ function renderRecord(){
   el.innerHTML=`${alertH}
     <div class="C">
       <h2>🚨 Record Incident</h2>
-      <div class="toggle"><button class="${mode==="monitor"?"on":""}" onclick="mode='monitor';renderRecord()">📝 Monitor</button><button class="${mode==="teacher"?"on":""}" onclick="mode='teacher';renderRecord()">👨‍🏫 Teacher</button></div>
+      <div class="toggle"><button class="${mode==="monitor"?"on":""}" onclick="mode='monitor';renderRecord()">📝 Class Monitor</button><button class="${mode==="teacher"?"on":""}" onclick="mode='teacher';renderRecord()">👨‍🏫 Teacher</button></div>
       <div class="R">
         <div><div class="L">Section</div><select id="rSec" onchange="updRC()"><option value="Primary">Primary</option><option value="High School">High School</option></select></div>
         <div><div class="L">Class</div><select id="rCls" onchange="updRS()"></select></div>
@@ -326,8 +326,8 @@ function addInc(){
   inc.unshift(item);svI();
 
   const cnt=inc.filter(i=>i.date===item.date&&i.student===stu).length;
-  if(cnt===3)flash("⚠️ "+stu+" — 3rd incident today!");
-  else flash("✓ "+stu+" — "+selOffences.join(", "));
+  if(cnt===3)flash("⚠️ "+stu+" — 3rd incident today!",sndRepeat);
+  else flash("✓ "+stu+" — "+selOffences.join(", "),highest==="high"?sndSerious:sndIncident);
   renderRecord();
 }
 
@@ -364,7 +364,7 @@ function saveAtt(){
   const late=Object.entries(aState).filter(([_,v])=>v==="L").map(([k])=>k);
   const present=Object.values(aState).filter(v=>v==="P").length;
   att.unshift({id:Date.now(),class:cls,date:d,total:Object.keys(aState).length,present,absent,late});
-  svA();flash("✓ "+CL[cls]+": "+absent.length+" absent, "+late.length+" late");
+  svA();flash("✓ "+CL[cls]+": "+absent.length+" absent, "+late.length+" late",sndAttendance);
 }
 
 // === STUDENT MANAGEMENT ===
@@ -396,7 +396,7 @@ function addStudents(){
   const added=newNames.filter(n=>!current.includes(n));
   setStu(cls,[...current,...added]);
   document.getElementById("sNames").value="";
-  flash("✓ Added "+added.length+" students to "+CL[cls]);
+  flash("✓ Added "+added.length+" students to "+CL[cls],sndAttendance);
   showStuList();
 }
 
@@ -475,11 +475,40 @@ function shareE(f){window.open("mailto:?subject="+encodeURIComponent(f?"Full Rep
 function shareW(f){window.open("https://wa.me/?text="+encodeURIComponent(buildText(f)),"_blank");}
 function doPrint(f){document.getElementById("printArea").innerHTML="<h1>Darusalaam International Academic School</h1><h3>"+(f?"Full":"Daily")+" Report — "+fDL(td())+"</h3><pre style='white-space:pre-wrap;font-size:11px'>"+esc(buildText(f))+"</pre><div class='pr-ft'>Generated "+new Date().toLocaleString("en-GB")+"</div>";setTimeout(()=>window.print(),200);}
 
-function expCSV(){if(!inc.length){flash("No data");return;}const h="Date,Time,Class,Student,Offences,Severity,Involved,Location,Note,Mode\n";const r=inc.map(i=>`${i.date},${i.time},${CL[i.class]||i.class},"${(i.student||"").replace(/"/g,'""')}","${(i.offence||"").replace(/"/g,'""')}",${i.sev},"${(i.involved||"").replace(/"/g,'""')}","${(i.location||"").replace(/"/g,'""')}","${(i.note||"").replace(/"/g,'""')}",${i.mode||""}`).join("\n");const b=new Blob([h+r],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="dias_"+td()+".csv";a.click();URL.revokeObjectURL(u);flash("CSV exported!");}
+function expCSV(){if(!inc.length){flash("No data");return;}const h="Date,Time,Class,Student,Offences,Severity,Involved,Location,Note,Mode\n";const r=inc.map(i=>`${i.date},${i.time},${CL[i.class]||i.class},"${(i.student||"").replace(/"/g,'""')}","${(i.offence||"").replace(/"/g,'""')}",${i.sev},"${(i.involved||"").replace(/"/g,'""')}","${(i.location||"").replace(/"/g,'""')}","${(i.note||"").replace(/"/g,'""')}",${i.mode||""}`).join("\n");const b=new Blob([h+r],{type:"text/csv"});const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="dias_"+td()+".csv";a.click();URL.revokeObjectURL(u);flash("CSV exported!",sndAttendance);}
 
 function importCSV(input){const file=input.files[0];if(!file)return;const st=document.getElementById("impSt");st.textContent="Reading...";const reader=new FileReader();reader.onload=function(e){try{const lines=e.target.result.split("\n").filter(l=>l.trim());if(lines.length<2){st.textContent="Empty file";return;}let imported=0;const nameToId={};CLASSES.forEach(c=>{nameToId[c.name.toLowerCase()]=c.id;});nameToId["level 1"]="level1";nameToId["level 2"]="level2";for(let i=1;i<lines.length;i++){const row=[];let cur="",inQ=false;for(let j=0;j<lines[i].length;j++){const ch=lines[i][j];if(ch==='"')inQ=!inQ;else if(ch===','&&!inQ){row.push(cur.trim());cur="";}else cur+=ch;}row.push(cur.trim());if(row.length<5)continue;const date=row[0],time=row[1],clsRaw=row[2],student=row[3],offence=row[4],severity=row[5]||sev(offence),involved=row[6]||"",location=row[7]||"In class",note=row[8]||"";if(!student||!offence)continue;let clsId=nameToId[clsRaw.toLowerCase()]||clsRaw;const dup=inc.some(x=>x.student===student&&x.date===date&&x.time===time&&x.offence===offence);if(dup)continue;inc.push({id:Date.now()+i,class:clsId,student,offence,offences:[offence],sev:severity,involved,location,note,date,time,mode:"teacher"});imported++;}svI();st.innerHTML=`<span style="color:var(--grn)">✓ Imported ${imported}</span>`;flash("✓ Imported "+imported);}catch(err){st.textContent="Error: "+err.message;}};reader.readAsText(file);}
 
-function flash(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2500);}
+// === SOUND & VIBRATION SYSTEM ===
+const AudioCtx=window.AudioContext||window.webkitAudioContext;
+let _ac=null;
+function getAC(){if(!_ac)_ac=new AudioCtx();if(_ac.state==='suspended')_ac.resume();return _ac;}
+
+function playTone(freqs,durations,type='sine'){
+  try{
+    const ac=getAC();
+    let t=ac.currentTime;
+    freqs.forEach((f,i)=>{
+      const o=ac.createOscillator();
+      const g=ac.createGain();
+      o.type=type;
+      o.frequency.value=f;
+      g.gain.setValueAtTime(0.3,t);
+      g.gain.exponentialRampToValueAtTime(0.01,t+durations[i]);
+      o.connect(g);g.connect(ac.destination);
+      o.start(t);o.stop(t+durations[i]);
+      t+=durations[i]*0.85;
+    });
+  }catch(e){}
+}
+
+function sndIncident(){playTone([300,200],[0.12,0.15],'square');try{navigator.vibrate(100);}catch{}}
+function sndSerious(){playTone([400,200,400,200],[0.1,0.15,0.1,0.15],'square');try{navigator.vibrate([100,50,100]);}catch{}}
+function sndMerit(){playTone([523,659,784],[0.15,0.15,0.25],'sine');try{navigator.vibrate(50);}catch{}}
+function sndAttendance(){playTone([600],[0.2],'sine');try{navigator.vibrate(50);}catch{}}
+function sndRepeat(){playTone([500,400,500],[0.08,0.08,0.12],'sawtooth');try{navigator.vibrate([80,40,80,40,80]);}catch{}}
+
+function flash(m,snd){const t=document.getElementById("toast");t.textContent=m;t.classList.add("on");setTimeout(()=>t.classList.remove("on"),2500);if(snd)snd();}
 
 // === INSTALL PROMPT ===
 let deferredPrompt=null;
